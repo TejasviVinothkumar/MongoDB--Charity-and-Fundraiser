@@ -1,11 +1,32 @@
+ EXPERIMENT – 1
+(Basic Collection Creation & Dropping)
+🔹 Aim
+
+To create and drop a collection without constraints.
+
+🔹 Query
 use charityDB
 
 db.createCollection("fundraisers")
-
+🔹 O/P
+{ ok: 1 }
 show collections
-
+🔹 O/P
+fundraisers
 db.fundraisers.drop()
+🔹 O/P
+true
+🔹 Result
 
+The collection fundraisers was successfully created and dropped.
+
+EXPERIMENT – 2
+(Collection with Required Fields & Data Types)
+🔹 Aim
+
+To enforce required fields using schema validation.
+
+🔹 Query
 db.createCollection("fundraisers", {
 validator: {
 $jsonSchema: {
@@ -20,19 +41,33 @@ isActive: { bsonType: "bool" }
 }
 }
 })
-
+🔹 Valid Insert
 db.fundraisers.insertOne({
 title: "Help Flood Victims",
 organizer: "NGO Trust",
 targetAmount: 50000,
 isActive: true
 })
-
+🔹 O/P
+{ acknowledged: true, insertedId: ObjectId("...") }
+🔹 Invalid Insert (Missing field)
 db.fundraisers.insertOne({
 title: "Education Support",
 targetAmount: 30000
 })
+🔹 O/P
+MongoServerError: Document failed validation
+🔹 Result
 
+The collection enforces required fields. Invalid documents are rejected.
+
+EXPERIMENT – 3
+(Advanced Validation – Enum, Range, Pattern)
+🔹 Aim
+
+To apply advanced validation rules.
+
+🔹 Query
 db.createCollection("donations", {
 validator: {
 $jsonSchema: {
@@ -68,14 +103,28 @@ name: "Ravi",
 amount: 2500,
 category: "Medical"
 })
-
+🔹 O/P
+{ acknowledged: true, insertedId: ObjectId("...") }
+🔹 Invalid Insert
 db.donations.insertOne({
 donorId: "101",
 name: "A",
 amount: 5,
 category: "Food"
 })
+🔹 O/P
+MongoServerError: Document failed validation
+🔹 Result
 
+Advanced validation ensures correct donor data and prevents invalid entries.
+
+EXPERIMENT – 4
+(Modify Validation on Existing Collection)
+🔹 Aim
+
+To add validation rules to an existing collection.
+
+🔹 Queries
 db.createCollection("volunteers")
 db.runCommand({
 collMod: "volunteers",
@@ -101,5 +150,28 @@ minimum: 1
 },
 validationLevel: "moderate"
 })
+🔹 O/P
+{ ok: 1 }
+🔹 Result
 
+Validation rules were successfully added to the existing collection.
+
+EXPERIMENT – 5
+(View & Verify Validation Rules)
+🔹 Aim
+
+To view validation rules applied to a collection.
+
+🔹 Query
 db.getCollectionInfos({ name: "donations" })
+🔹 O/P
+
+ Displays:
+
+required fields
+enum values
+pattern rules
+validation settings
+🔹 Result
+
+The validation rules applied to the collection were successfully viewed and verified.
