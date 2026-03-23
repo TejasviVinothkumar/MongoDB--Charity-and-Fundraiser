@@ -1,0 +1,105 @@
+use charityDB
+
+db.createCollection("fundraisers")
+
+show collections
+
+db.fundraisers.drop()
+
+db.createCollection("fundraisers", {
+validator: {
+$jsonSchema: {
+bsonType: "object",
+required: ["title", "organizer", "targetAmount"],
+properties: {
+title: { bsonType: "string" },
+organizer: { bsonType: "string" },
+targetAmount: { bsonType: "int" },
+isActive: { bsonType: "bool" }
+}
+}
+}
+})
+
+db.fundraisers.insertOne({
+title: "Help Flood Victims",
+organizer: "NGO Trust",
+targetAmount: 50000,
+isActive: true
+})
+
+db.fundraisers.insertOne({
+title: "Education Support",
+targetAmount: 30000
+})
+
+db.createCollection("donations", {
+validator: {
+$jsonSchema: {
+bsonType: "object",
+required: ["donorId", "name", "amount", "category"],
+properties: {
+donorId: {
+bsonType: "string",
+pattern: "^DON[0-9]{3}$"
+},
+name: {
+bsonType: "string",
+minLength: 3
+},
+amount: {
+bsonType: "double",
+minimum: 10,
+maximum: 100000
+},
+category: {
+enum: ["Medical", "Education", "Disaster", "Animal"]
+}
+}
+}
+},
+validationLevel: "strict",
+validationAction: "error"
+})
+🔹 Valid Insert
+db.donations.insertOne({
+donorId: "DON101",
+name: "Ravi",
+amount: 2500,
+category: "Medical"
+})
+
+db.donations.insertOne({
+donorId: "101",
+name: "A",
+amount: 5,
+category: "Food"
+})
+
+db.createCollection("volunteers")
+db.runCommand({
+collMod: "volunteers",
+validator: {
+$jsonSchema: {
+bsonType: "object",
+required: ["volunteerId", "name", "hours"],
+properties: {
+volunteerId: {
+bsonType: "string",
+pattern: "^VOL[0-9]{3}$"
+},
+name: {
+bsonType: "string",
+minLength: 3
+},
+hours: {
+bsonType: "int",
+minimum: 1
+}
+}
+}
+},
+validationLevel: "moderate"
+})
+
+db.getCollectionInfos({ name: "donations" })
