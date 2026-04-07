@@ -5,17 +5,10 @@
 To create and drop a collection without constraints.
 
 🔹 Query
-use charityDB
-
-db.createCollection("fundraisers")
-🔹 O/P
-{ ok: 1 }
+db.createCollection("temp_campaigns")
 show collections
-🔹 O/P
-fundraisers
-db.fundraisers.drop()
-🔹 O/P
-true
+db.temp_campaigns.drop()
+
 🔹 Result
 
 The collection fundraisers was successfully created and dropped.
@@ -27,36 +20,37 @@ EXPERIMENT – 2
 To enforce required fields using schema validation.
 
 🔹 Query
-db.createCollection("fundraisers", {
-validator: {
-$jsonSchema: {
-bsonType: "object",
-required: ["title", "organizer", "targetAmount"],
-properties: {
-title: { bsonType: "string" },
-organizer: { bsonType: "string" },
-targetAmount: { bsonType: "int" },
-isActive: { bsonType: "bool" }
-}
-}
-}
+db.createCollection("campaigns", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["campaignTitle", "campaignId", "organizationName"],
+      properties: {
+        campaignTitle:    { bsonType: "string" },
+        campaignId:       { bsonType: "string" },
+        organizationName: { bsonType: "string" },
+        goalAmount:       { bsonType: ["double", "null"] },
+        isActive:         { bsonType: "bool" }
+      }
+    }
+  }
 })
+
 🔹 Valid Insert
-db.fundraisers.insertOne({
-title: "Help Flood Victims",
-organizer: "NGO Trust",
-targetAmount: 50000,
-isActive: true
+db.campaigns.insertOne({
+  campaignTitle:    "Clean Water for All",
+  campaignId:       "CMP2025001",
+  organizationName: "AquaHope NGO",
+  goalAmount:       500000.5,
+  isActive:         true
 })
-🔹 O/P
-{ acknowledged: true, insertedId: ObjectId("...") }
+
 🔹 Invalid Insert (Missing field)
-db.fundraisers.insertOne({
-title: "Education Support",
-targetAmount: 30000
+db.campaigns.insertOne({
+  campaignTitle:    "Feed the Children",
+  organizationName: "HopeFoundation"
 })
-🔹 O/P
-MongoServerError: Document failed validation
+
 🔹 Result
 
 The collection enforces required fields. Invalid documents are rejected.
@@ -68,52 +62,59 @@ EXPERIMENT – 3
 To apply advanced validation rules.
 
 🔹 Query
+
 db.createCollection("donations", {
-validator: {
-$jsonSchema: {
-bsonType: "object",
-required: ["donorId", "name", "amount", "category"],
-properties: {
-donorId: {
-bsonType: "string",
-pattern: "^DON[0-9]{3}$"
-},
-name: {
-bsonType: "string",
-minLength: 3
-},
-amount: {
-bsonType: "double",
-minimum: 10,
-maximum: 100000
-},
-category: {
-enum: ["Medical", "Education", "Disaster", "Animal"]
-}
-}
-}
-},
-validationLevel: "strict",
-validationAction: "error"
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["donorName", "donationCategory", "amount", "unitsReceived"],
+      properties: {
+        donorName: {
+          bsonType: "string",
+          minLength: 3,
+          maxLength: 100
+        },
+        donationCategory: {
+          enum: ["Food & Water", "Medical Aid", "Education",
+                 "Disaster Relief", "Animal Welfare"]
+        },
+        amount: {
+          bsonType: "double",
+          minimum: 50,
+          exclusiveMinimum: true
+        },
+        unitsReceived: {
+          bsonType: "int",
+          minimum: 1
+        },
+        transactionId: {
+          bsonType: ["string", "null"],
+          pattern: "^TXN[0-9]{6}[A-Z]{2}$"
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
 })
+
 🔹 Valid Insert
-db.donations.insertOne({
-donorId: "DON101",
-name: "Ravi",
-amount: 2500,
-category: "Medical"
+db.campaigns.insertOne({
+  campaignTitle:    "Clean Water for All",
+  campaignId:       "CMP2025001",
+  organizationName: "AquaHope NGO",
+  goalAmount:       500000.1,
+  isActive:         true
 })
-🔹 O/P
-{ acknowledged: true, insertedId: ObjectId("...") }
+
 🔹 Invalid Insert
 db.donations.insertOne({
-donorId: "101",
-name: "A",
-amount: 5,
-category: "Food"
+  donorName:        "Arjun Mehta",
+  donationCategory: "Sports",
+  amount:           1000.1,
+  unitsReceived:    NumberInt(5)
 })
-🔹 O/P
-MongoServerError: Document failed validation
+
 🔹 Result
 
 Advanced validation ensures correct donor data and prevents invalid entries.
@@ -127,31 +128,34 @@ To add validation rules to an existing collection.
 🔹 Queries
 db.createCollection("volunteers")
 db.runCommand({
-collMod: "volunteers",
-validator: {
-$jsonSchema: {
-bsonType: "object",
-required: ["volunteerId", "name", "hours"],
-properties: {
-volunteerId: {
-bsonType: "string",
-pattern: "^VOL[0-9]{3}$"
-},
-name: {
-bsonType: "string",
-minLength: 3
-},
-hours: {
-bsonType: "int",
-minimum: 1
-}
-}
-}
-},
-validationLevel: "moderate"
+  collMod: "volunteers",
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["volunteerId", "fullName", "role", "hoursCommitted"],
+      properties: {
+        volunteerId: {
+          bsonType: "string",
+          pattern: "^VOL[0-9]{5}$"
+        },
+        fullName: {
+          bsonType: "string",
+          minLength: 3
+        },
+        role: {
+          enum: ["Field Worker", "Coordinator",
+                 "Fundraiser", "Medical Staff"]
+        },
+        hoursCommitted: {
+          bsonType: "double",
+          minimum: 1.0
+        }
+      }
+    }
+  },
+  validationLevel: "moderate"
 })
-🔹 O/P
-{ ok: 1 }
+
 🔹 Result
 
 Validation rules were successfully added to the existing collection.
@@ -164,14 +168,8 @@ To view validation rules applied to a collection.
 
 🔹 Query
 db.getCollectionInfos({ name: "donations" })
-🔹 O/P
+db.getCollectionInfos({ name: "volunteers" })
 
- Displays:
-
-required fields
-enum values
-pattern rules
-validation settings
 🔹 Result
 
 The validation rules applied to the collection were successfully viewed and verified.
