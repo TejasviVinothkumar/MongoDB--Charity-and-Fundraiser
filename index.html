@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charity Fundraiser</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<h1>Charity Fundraiser Platform</h1>
+
+<a href="/add" class="btn">Add Campaign</a>
+
+<h2>Donation Analytics</h2>
+
+<img src="{{ graph }}" width="600">
+
+<div class="container">
+
+{% for campaign in campaigns %}
+
+<div class="card">
+
+    <h2>{{ campaign.title }}</h2>
+
+    <p>{{ campaign.description }}</p>
+
+    <p><b>Goal:</b> ₹{{ campaign.goal }}</p>
+
+    <p><b>Raised:</b> ₹{{ campaign.raised }}</p>
+
+    <!-- DONATE -->
+    <form action="/donate/{{ campaign._id }}"
+          method="POST">
+
+        <input type="number"
+               name="amount"
+               placeholder="Donation Amount"
+               required>
+
+        <button type="submit">Donate</button>
+    </form>
+
+    <br>
+
+    <!-- UPDATE -->
+    <a href="/edit/{{ campaign._id }}"
+       class="edit-btn">Edit</a>
+
+    <!-- DELETE -->
+    <a href="/delete/{{ campaign._id }}"
+       class="delete-btn">Delete</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>

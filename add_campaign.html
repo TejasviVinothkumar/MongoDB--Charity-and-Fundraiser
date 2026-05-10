@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Campaign</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<h1>Add Campaign</h1>
+
+<form method="POST">
+
+    <input type="text"
+           name="title"
+           placeholder="Campaign Title"
+           required>
+
+    <textarea name="description"
+              placeholder="Description"></textarea>
+
+    <input type="number"
+           name="goal"
+           placeholder="Goal Amount"
+           required>
+
+    <button type="submit">Create Campaign</button>
+
+</form>
+
+</body>
+</html>
